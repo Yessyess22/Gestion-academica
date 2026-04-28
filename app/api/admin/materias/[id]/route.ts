@@ -68,7 +68,7 @@ export async function PUT(
       .eq("id", id)
       .select(`
         id, codigo, nombre, creditos, semestre, docente_id, created_at,
-        docente:usuarios_perfil!docente_id(id, nombre, apellido)
+        docente:usuarios_perfil!docente_id(id, nombre_completo)
       `)
       .single()
 

@@ -73,3 +73,16 @@ export async function proxy(request: NextRequest) {
 
   return supabaseResponse 
 }
+
+export const config = {
+  matcher: [
+    /*
+     * Ejecutar en todas las rutas EXCEPTO:
+     * - _next/static (archivos estáticos)
+     * - _next/image (optimización de imágenes)
+     * - favicon.ico
+     * - archivos con extensión (imágenes, etc.)
+     */
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+  ],
+}

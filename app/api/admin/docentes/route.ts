@@ -31,10 +31,10 @@ export async function GET() {
 
     const { data: docentes, error } = await supabaseAdmin
       .from("usuarios_perfil")
-      .select("id, nombre, apellido")
+      .select("id, nombre_completo")
       .eq("rol", "docente")
       .eq("activo", true)
-      .order("apellido", { ascending: true })
+      .order("nombre_completo", { ascending: true })
 
     if (error) {
       console.error("Error al listar docentes:", error)

@@ -76,8 +76,10 @@ export function LoginForm() {
         router.push("/") 
       } 
 
-      // 4. Forzar refresh para que proxy.ts actualice cookies 
-      router.refresh() 
+      // 4. Quitar router.refresh() porque en Next.js App Router 
+      // suele cancelar el router.push() que lo precede, haciendo 
+      // que uno se quede en /login.
+      // router.refresh() 
     } catch { 
       setError("Error inesperado. Intenta de nuevo.") 
     } finally { 

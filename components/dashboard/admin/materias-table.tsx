@@ -46,8 +46,7 @@ import { Plus, RefreshCw, Pencil, Trash2 } from "lucide-react";
 
 interface Docente {
   id: string;
-  nombre: string;
-  apellido: string;
+  nombre_completo: string;
 }
 
 interface Materia {
@@ -263,7 +262,7 @@ export default function MateriasTable() {
                 <SelectContent>
                   <SelectItem value="sin-asignar">Sin asignar</SelectItem>
                   {docentes.map((d) => (
-                    <SelectItem key={d.id} value={d.id}>{d.nombre} {d.apellido}</SelectItem>
+                    <SelectItem key={d.id} value={d.id}>{d.nombre_completo}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -305,7 +304,7 @@ export default function MateriasTable() {
                   <TableCell>{m.nombre}</TableCell>
                   <TableCell><Badge variant="secondary">{m.creditos}</Badge></TableCell>
                   <TableCell><Badge variant="outline">{m.semestre}</Badge></TableCell>
-                  <TableCell>{m.docente ? `${m.docente.nombre} ${m.docente.apellido}` : <span className="text-muted-foreground italic">Sin asignar</span>}</TableCell>
+                  <TableCell>{m.docente ? m.docente.nombre_completo : <span className="text-muted-foreground italic">Sin asignar</span>}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Button variant="ghost" size="sm" onClick={() => abrirEditar(m)}><Pencil className="h-4 w-4" /></Button>

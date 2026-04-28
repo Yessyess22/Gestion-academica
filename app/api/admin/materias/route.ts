@@ -42,7 +42,7 @@ export async function GET() {
       .from("materias") 
       .select(` 
         id, codigo, nombre, creditos, semestre, docente_id, created_at, 
-        docente:usuarios_perfil!docente_id(id, nombre, apellido) 
+        docente:usuarios_perfil!docente_id(id, nombre_completo) 
       `) 
       .order("created_at", { ascending: false }) 
 
@@ -99,7 +99,7 @@ export async function POST(request: Request) {
       }) 
       .select(` 
         id, codigo, nombre, creditos, semestre, docente_id, created_at, 
-        docente:usuarios_perfil!docente_id(id, nombre, apellido) 
+        docente:usuarios_perfil!docente_id(id, nombre_completo) 
       `) 
       .single() 
 

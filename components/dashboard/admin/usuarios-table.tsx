@@ -36,8 +36,7 @@ import { Shield, UserCheck, UserX, RefreshCw } from "lucide-react";
 
 interface Usuario {
   id: string;
-  nombre: string;
-  apellido: string;
+  nombre_completo: string;
   email: string;
   rol: "estudiante" | "docente" | "admin";
   activo: boolean;
@@ -199,7 +198,7 @@ export default function UsuariosTable() {
             ) : (
               usuariosFiltrados.map((u) => (
                 <TableRow key={u.id}>
-                  <TableCell className="font-medium">{u.nombre} {u.apellido}</TableCell>
+                  <TableCell className="font-medium">{u.nombre_completo}</TableCell>
                   <TableCell>{u.email}</TableCell>
                   <TableCell>{badgeRol(u.rol)}</TableCell>
                   <TableCell>
@@ -229,7 +228,7 @@ export default function UsuariosTable() {
                         <AlertDialogContent>
                           <AlertDialogHeader>
                             <AlertDialogTitle>{u.activo ? "¿Desactivar usuario?" : "¿Activar usuario?"}</AlertDialogTitle>
-                            <AlertDialogDescription>{u.activo ? `${u.nombre} ${u.apellido} no podrá iniciar sesión.` : `${u.nombre} ${u.apellido} podrá acceder nuevamente.`}</AlertDialogDescription>
+                            <AlertDialogDescription>{u.activo ? `${u.nombre_completo} no podrá iniciar sesión.` : `${u.nombre_completo} podrá acceder nuevamente.`}</AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancelar</AlertDialogCancel>
