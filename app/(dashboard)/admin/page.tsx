@@ -1,21 +1,29 @@
-export default function AdminDashboard() { 
+import DashboardAdmin from "@/components/dashboard/admin/dashboard-admin";
 
-  return ( 
 
-    <div className="space-y-4"> 
 
-      <h1 className="text-3xl font-bold">Dashboard Administrador</h1> 
+export default function AdminDashboardPage() {
 
-      <p className="text-muted-foreground"> 
+  return (
 
-        Bienvenido al panel de administración. Aquí gestionarás 
+    <div className="flex flex-1 flex-col gap-4 p-4">
 
-        usuarios, materias e inscripciones del sistema. 
+      <div>
 
-      </p> 
+        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
 
-    </div> 
+        <p className="text-muted-foreground">
 
-  ) 
+          Panel de administración del sistema
+
+        </p>
+
+      </div>
+
+      <DashboardAdmin />
+
+    </div>
+
+  );
 
 } 

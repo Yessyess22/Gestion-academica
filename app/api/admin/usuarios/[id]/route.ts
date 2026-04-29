@@ -64,7 +64,7 @@ export async function PUT(
       .from("usuarios_perfil")
       .update(payload)
       .eq("id", id)
-      .select("id, nombre, apellido, rol, activo, created_at, updated_at")
+      .select("id, nombre_completo, rol, activo, created_at, updated_at")
       .single()
 
     if (error) {

@@ -28,13 +28,7 @@
 
       semestre: string; 
 
-      docente?: { 
-
-        nombre: string; 
-
-        apellido: string; 
-
-      } | null; 
+      docente?: { nombre_completo: string; } | null;
 
     }; 
 
@@ -106,7 +100,7 @@
 
               {materia.docente 
 
-                ? `${materia.docente.nombre} ${materia.docente.apellido}` 
+                ? `${materia.docente.nombre_completo}` 
 
                 : "Docente no asignado"} 
 

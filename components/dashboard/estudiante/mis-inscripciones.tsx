@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-
 import {
   Table,
   TableBody,
@@ -31,12 +30,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-
 import { RefreshCw, LogOut } from "lucide-react";
 
 interface Inscripcion {
   id: string;
-  estado: "inscrito" | "retirado";
+  estado: "activa" | "retirada" | "completada";
   created_at: string;
   materia: {
     id: string;
@@ -45,8 +43,7 @@ interface Inscripcion {
     creditos: number;
     semestre: string;
     docente: {
-      nombre: string;
-      apellido: string;
+      nombre_completo: string;
     } | null;
   };
 }
@@ -60,7 +57,7 @@ export default function MisInscripciones() {
   const cargarInscripciones = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/estudiante/inscripciones", { credentials: "same-origin" });
+      const res = await fetch("/api/estudiante/inscripciones");
       const data = await res.json();
       if (!res.ok) {
         toast.error(data.error || "Error al cargar inscripciones");
@@ -75,7 +72,6 @@ export default function MisInscripciones() {
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     cargarInscripciones();
   }, []);
 
@@ -83,10 +79,10 @@ export default function MisInscripciones() {
     return filtroEstado === "todos" || i.estado === filtroEstado;
   });
 
-  const totalInscritas = inscripciones.filter((i) => i.estado === "inscrito").length;
-  const totalRetiradas = inscripciones.filter((i) => i.estado === "retirado").length;
+  const totalActivas = inscripciones.filter((i) => i.estado === "activa").length;
+  const totalRetiradas = inscripciones.filter((i) => i.estado === "retirada").length;
   const totalCreditos = inscripciones
-    .filter((i) => i.estado === "inscrito")
+    .filter((i) => i.estado === "activa")
     .reduce((sum, i) => sum + (i.materia?.creditos || 0), 0);
 
   const retirarInscripcion = async (inscripcion: Inscripcion) => {
@@ -94,29 +90,29 @@ export default function MisInscripciones() {
     try {
       const res = await fetch(`/api/estudiante/inscripciones/${inscripcion.id}`, {
         method: "PUT",
-        credentials: "same-origin",
       });
 
       const data = await res.json();
-
       if (!res.ok) {
         toast.error(data.error || "Error al retirar inscripcion");
         return;
       }
 
-      toast.success(
-        `Inscripcion retirada: ${inscripcion.materia.codigo} - ${inscripcion.materia.nombre}`
-      );
-
-      setInscripciones((prev) =>
-        prev.map((i) =>
-          i.id === inscripcion.id ? { ...i, estado: "retirado" as const } : i
-        )
-      );
+      toast.success(`Inscripcion retirada correctamente`);
+      cargarInscripciones();
     } catch {
       toast.error("Error de conexion");
     } finally {
       setRetirando(null);
+    }
+  };
+
+  const getBadgeVariant = (estado: string) => {
+    switch (estado) {
+      case "activa": return "default";
+      case "completada": return "secondary";
+      case "retirada": return "destructive";
+      default: return "outline";
     }
   };
 
@@ -128,50 +124,30 @@ export default function MisInscripciones() {
     );
   }
 
-  if (inscripciones.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center gap-2 py-12">
-        <p className="text-muted-foreground">No tienes inscripciones aun.</p>
-        <p className="text-sm text-muted-foreground">
-          Ve al catalogo de materias para inscribirte.
-        </p>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-6 text-sm">
-        <span>
-          Inscritas: <strong className="text-green-600">{totalInscritas}</strong>
-        </span>
-        <span>
-          Retiradas: <strong className="text-red-500">{totalRetiradas}</strong>
-        </span>
-        <span>
-          Creditos activos: <strong>{totalCreditos}</strong>
-        </span>
+        <span>Activas: <strong className="text-green-600">{totalActivas}</strong></span>
+        <span>Retiradas: <strong className="text-red-500">{totalRetiradas}</strong></span>
+        <span>Creditos: <strong>{totalCreditos}</strong></span>
       </div>
 
       <div className="flex items-center gap-4">
         <Select value={filtroEstado} onValueChange={setFiltroEstado}>
           <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Filtrar por estado" />
+            <SelectValue placeholder="Estado" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="todos">Todos los estados</SelectItem>
-            <SelectItem value="inscrito">Inscritas</SelectItem>
-            <SelectItem value="retirado">Retiradas</SelectItem>
+            <SelectItem value="activa">Activas</SelectItem>
+            <SelectItem value="retirada">Retiradas</SelectItem>
+            <SelectItem value="completada">Completadas</SelectItem>
           </SelectContent>
         </Select>
 
         <Button variant="outline" size="sm" onClick={cargarInscripciones}>
           <RefreshCw className="mr-2 h-4 w-4" /> Refrescar
         </Button>
-
-        <span className="ml-auto text-sm text-muted-foreground">
-          {inscripcionesFiltradas.length} inscripcion(es)
-        </span>
       </div>
 
       <div className="rounded-md border">
@@ -181,7 +157,6 @@ export default function MisInscripciones() {
               <TableHead>Codigo</TableHead>
               <TableHead>Materia</TableHead>
               <TableHead>Creditos</TableHead>
-              <TableHead>Semestre</TableHead>
               <TableHead>Docente</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead>Fecha</TableHead>
@@ -191,64 +166,44 @@ export default function MisInscripciones() {
           <TableBody>
             {inscripcionesFiltradas.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="py-8 text-center">
+                <TableCell colSpan={7} className="py-8 text-center text-muted-foreground">
                   No se encontraron inscripciones
                 </TableCell>
               </TableRow>
             ) : (
               inscripcionesFiltradas.map((i) => (
                 <TableRow key={i.id}>
-                  <TableCell className="font-mono font-medium">{i.materia?.codigo}</TableCell>
-                  <TableCell>{i.materia?.nombre}</TableCell>
+                  <TableCell className="font-mono">{i.materia?.codigo}</TableCell>
+                  <TableCell className="font-medium">{i.materia?.nombre}</TableCell>
+                  <TableCell>{i.materia?.creditos}</TableCell>
+                  <TableCell>{i.materia?.docente?.nombre_completo || "Sin asignar"}</TableCell>
                   <TableCell>
-                    <Badge variant="secondary">{i.materia?.creditos}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{i.materia?.semestre}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    {i.materia?.docente ? (
-                      `${i.materia.docente.nombre} ${i.materia.docente.apellido}`
-                    ) : (
-                      <span className="italic text-muted-foreground">Sin asignar</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={i.estado === "inscrito" ? "default" : "destructive"}>
+                    <Badge variant={getBadgeVariant(i.estado)}>
                       {i.estado.charAt(0).toUpperCase() + i.estado.slice(1)}
                     </Badge>
                   </TableCell>
                   <TableCell>{new Date(i.created_at).toLocaleDateString("es-BO")}</TableCell>
                   <TableCell className="text-right">
-                    {i.estado === "inscrito" ? (
+                    {i.estado === "activa" && (
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button variant="destructive" size="sm" disabled={retirando === i.id}>
-                            <LogOut className="mr-1 h-3 w-3" />
-                            {retirando === i.id ? "Retirando..." : "Retirar"}
+                          <Button variant="outline" size="sm" className="text-red-500 hover:text-red-600">
+                            Retirar
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Retirar inscripcion?</AlertDialogTitle>
+                            <AlertDialogTitle>Confirmar Retiro</AlertDialogTitle>
                             <AlertDialogDescription>
-                              Estas a punto de retirarte de <strong>{i.materia?.codigo} - {i.materia?.nombre}</strong>.
-                              Esta accion es permanente y no podras volver a inscribirte en esta materia.
+                              ¿Estás seguro que deseas retirar la materia {i.materia?.nombre}?
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => retirarInscripcion(i)}
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            >
-                              Confirmar retiro
-                            </AlertDialogAction>
+                            <AlertDialogAction onClick={() => retirarInscripcion(i)}>Confirmar</AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>
-                    ) : (
-                      <span className="text-sm italic text-muted-foreground">Retirada</span>
                     )}
                   </TableCell>
                 </TableRow>

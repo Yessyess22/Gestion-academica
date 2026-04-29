@@ -14,8 +14,7 @@ import { RefreshCw, ClipboardPlus, CheckCircle2, XCircle } from "lucide-react";
 import MateriaCard from "@/components/dashboard/materia-card";
 
 interface Docente {
-  nombre: string;
-  apellido: string;
+  nombre_completo: string;
 }
 
 interface Materia {
@@ -29,7 +28,7 @@ interface Materia {
 
 interface Inscripcion {
   id: string;
-  estado: "inscrito" | "retirado";
+  estado: "activa" | "retirada" | "completada";
   materia: { id: string };
 }
 
@@ -44,8 +43,8 @@ export default function CatalogoMaterias() {
     if (showLoading) setLoading(true);
     try {
       const [resMaterias, resInsc] = await Promise.all([
-        fetch("/api/estudiante/materias", { credentials: "same-origin" }),
-        fetch("/api/estudiante/inscripciones", { credentials: "same-origin" }),
+        fetch("/api/estudiante/materias"),
+        fetch("/api/estudiante/inscripciones"),
       ]);
 
       const dataMaterias = await resMaterias.json();
@@ -61,12 +60,15 @@ export default function CatalogoMaterias() {
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    void cargarDatos(false);
+    void cargarDatos(true);
   }, []);
 
   const getEstadoInscripcion = (materiaId: string) => {
-    const insc = inscripciones.find((i) => i.materia?.id === materiaId);
+    const insc = inscripciones.find((i) => {
+        // Manejar tanto objeto como UUID directo segun lo que devuelva la API corregida
+        const mid = (i.materia as any)?.id || i.materia;
+        return mid === materiaId;
+    });
     if (!insc) return "no-inscrito";
     return insc.estado;
   };
@@ -76,25 +78,20 @@ export default function CatalogoMaterias() {
     try {
       const res = await fetch("/api/estudiante/inscripciones", {
         method: "POST",
-        credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ materia_id: materiaId }),
       });
 
       const data = await res.json();
-
       if (!res.ok) {
         toast.error(data.error || "Error al inscribirse");
         return;
       }
 
-      toast.success(
-        `Inscrito en ${data.inscripcion.materia.codigo} - ${data.inscripcion.materia.nombre}`
-      );
-
-      setInscripciones((prev) => [...prev, data.inscripcion]);
+      toast.success("Inscripción realizada con éxito");
+      cargarDatos(false);
     } catch {
-      toast.error("Error de conexion");
+      toast.error("Error al procesar inscripción");
     } finally {
       setInscribiendo(null);
     }
@@ -108,16 +105,16 @@ export default function CatalogoMaterias() {
   const renderBotonInscripcion = (materia: Materia) => {
     const estado = getEstadoInscripcion(materia.id);
 
-    if (estado === "inscrito") {
+    if (estado === "activa" || estado === "completada") {
       return (
         <Button variant="outline" size="sm" className="w-full" disabled>
           <CheckCircle2 className="mr-2 h-4 w-4 text-green-600" />
-          Inscrito
+          {estado === "activa" ? "Inscrito" : "Completada"}
         </Button>
       );
     }
 
-    if (estado === "retirado") {
+    if (estado === "retirada") {
       return (
         <Button variant="outline" size="sm" className="w-full" disabled>
           <XCircle className="mr-2 h-4 w-4 text-red-500" />
@@ -169,26 +166,20 @@ export default function CatalogoMaterias() {
         </Button>
 
         <span className="ml-auto text-sm text-muted-foreground">
-          {materiasFiltradas.length} materia(s) | {inscripciones.filter((i) => i.estado === "inscrito").length} inscrita(s)
+          {materiasFiltradas.length} materia(s) | {inscripciones.filter((i) => i.estado === "activa").length} activa(s)
         </span>
       </div>
 
-      {materiasFiltradas.length === 0 ? (
-        <div className="flex items-center justify-center py-12">
-          <p className="text-muted-foreground">No se encontraron materias</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {materiasFiltradas.map((m) => (
-            <MateriaCard
-              key={m.id}
-              materia={m}
-              mostrarDocente={true}
-              accion={renderBotonInscripcion(m)}
-            />
-          ))}
-        </div>
-      )}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {materiasFiltradas.map((m) => (
+          <MateriaCard
+            key={m.id}
+            materia={m}
+            mostrarDocente={true}
+            accion={renderBotonInscripcion(m)}
+          />
+        ))}
+      </div>
     </div>
   );
 }

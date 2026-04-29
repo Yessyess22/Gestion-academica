@@ -66,7 +66,7 @@
 
             id, codigo, nombre, creditos, semestre, 
 
-            docente:usuarios_perfil!docente_id(nombre, apellido) 
+            docente:usuarios_perfil!docente_id(nombre_completo) 
 
           ) 
 

@@ -1,11 +1,30 @@
-export default function DocenteDashboard() { 
-  return ( 
-    <div className="space-y-4"> 
-      <h1 className="text-3xl font-bold">Dashboard Docente</h1> 
-      <p className="text-muted-foreground"> 
-        Bienvenido al panel de docente. Aquí gestionarás tus materias 
-        y calificaciones de estudiantes. 
-      </p> 
-    </div> 
-  ) 
-} 
+import DashboardDocente from "@/components/dashboard/docente/dashboard-docente";
+
+
+
+export default function DocenteDashboardPage() {
+
+  return (
+
+    <div className="flex flex-1 flex-col gap-4 p-4">
+
+      <div>
+
+        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+
+        <p className="text-muted-foreground">
+
+          Bienvenido a tu panel de docente
+
+        </p>
+
+      </div>
+
+      <DashboardDocente />
+
+    </div>
+
+  );
+
+}
+
