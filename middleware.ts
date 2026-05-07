@@ -48,8 +48,8 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser() 
 
   // 4. Definir rutas públicas y privadas 
-  const publicRoutes = ["/", "/login", "/registro", "/auth"] 
-  const privateRoutePrefixes = ["/admin", "/docente", "/estudiante"]
+  const publicRoutes = ["/", "/login", "/registro", "/auth"]
+  const privateRoutePrefixes = ["/admin", "/coordinador", "/vacunador"]
 
   const isPublicRoute = publicRoutes.some((route) => 
     route === "/" ? pathname === "/" : pathname.startsWith(route) 

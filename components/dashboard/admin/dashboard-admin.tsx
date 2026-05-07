@@ -1,159 +1,73 @@
-"use client";
+"use client"
 
-
-
-import { useEffect, useState } from "react";
-
-import { toast } from "sonner";
-
-import { StatsCard } from "@/components/dashboard/stats-card";
-
-import { Button } from "@/components/ui/button";
-
-import {
-
-    Users, BookOpen, ClipboardList, UserCheck,
-
-    UserX, GraduationCap, Shield, CheckCircle2,
-
-} from "lucide-react";
-
-import { useRouter } from "next/navigation";
-
-
+import { useEffect, useState } from "react"
+import { StatsCard } from "@/components/dashboard/stats-card"
+import { Syringe, CalendarDays, Users, Building2, AlertTriangle } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
 
 interface Stats {
-
-    totalUsuarios: number;
-
-    totalEstudiantes: number;
-
-    totalDocentes: number;
-
-    totalAdmins: number;
-
-    totalActivos: number;
-
-    totalInactivos: number;
-
-    totalMaterias: number;
-
-    totalInscripciones: number;
-
-    inscripcionesActivas: number;
-
+  totalDosis: number
+  dosisMes: number
+  totalPacientes: number
+  totalEstablecimientos: number
+  sinCadenaFrio: number
 }
 
+export function DashboardAdmin() {
+  const [stats, setStats] = useState<Stats | null>(null)
+  const [loading, setLoading] = useState(true)
+  const router = useRouter()
 
+  useEffect(() => {
+    fetch("/api/admin/stats")
+      .then((r) => r.json())
+      .then((d) => { setStats(d.stats); setLoading(false) })
+  }, [])
 
-export default function DashboardAdmin() {
+  if (loading) return <div className="text-muted-foreground py-8 text-center">Cargando...</div>
 
-    const [stats, setStats] = useState<Stats | null>(null);
+  return (
+    <div className="space-y-6">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+        <StatsCard
+          title="Total dosis registradas"
+          value={stats?.totalDosis ?? 0}
+          icon={<Syringe className="h-4 w-4 text-muted-foreground" />}
+          description="Historial nacional completo"
+        />
+        <StatsCard
+          title="Dosis este mes"
+          value={stats?.dosisMes ?? 0}
+          icon={<CalendarDays className="h-4 w-4 text-muted-foreground" />}
+          description="Mes actual"
+        />
+        <StatsCard
+          title="Pacientes registrados"
+          value={stats?.totalPacientes ?? 0}
+          icon={<Users className="h-4 w-4 text-muted-foreground" />}
+          description="Total nacional"
+        />
+        <StatsCard
+          title="Establecimientos activos"
+          value={stats?.totalEstablecimientos ?? 0}
+          icon={<Building2 className="h-4 w-4 text-muted-foreground" />}
+          description="En toda Bolivia"
+        />
+        <StatsCard
+          title="Sin cadena frío"
+          value={stats?.sinCadenaFrio ?? 0}
+          icon={<AlertTriangle className="h-4 w-4 text-yellow-500" />}
+          description="Establecimientos sin refrigeración"
+        />
+      </div>
 
-    const [loading, setLoading] = useState(true);
-
-    const router = useRouter();
-
-
-
-    useEffect(() => {
-
-        const cargar = async () => {
-
-            try {
-
-                const res = await fetch("/api/admin/stats");
-
-                const data = await res.json();
-
-                if (res.ok) setStats(data.stats);
-
-            } catch {
-
-                toast.error("Error al cargar estadísticas");
-
-            } finally {
-
-                setLoading(false);
-
-            }
-
-        };
-
-        cargar();
-
-    }, []);
-
-
-
-    if (loading) {
-
-        return (
-
-            <div className="flex items-center justify-center py-12">
-
-                <p className="text-muted-foreground">Cargando dashboard...</p>
-
-            </div>
-
-        );
-
-    }
-
-
-
-    return (
-
-        <div className="space-y-6">
-
-            {/* Fila 1: Usuarios */}
-
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-
-                <StatsCard title="Usuarios" value={stats?.totalUsuarios ?? 0} icon={Users} />
-
-                <StatsCard title="Estudiantes" value={stats?.totalEstudiantes ?? 0} icon={GraduationCap} />
-
-                <StatsCard title="Docentes" value={stats?.totalDocentes ?? 0} icon={BookOpen} />
-
-                <StatsCard title="Admins" value={stats?.totalAdmins ?? 0} icon={Shield} />
-
-                <StatsCard title="Activos" value={stats?.totalActivos ?? 0} icon={UserCheck} />
-
-                <StatsCard title="Inactivos" value={stats?.totalInactivos ?? 0} icon={UserX} />
-
-            </div>
-
-
-
-            {/* Fila 2: Materias e inscripciones */}
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-                <StatsCard title="Materias" value={stats?.totalMaterias ?? 0} icon={BookOpen} />
-
-                <StatsCard title="Inscripciones" value={stats?.totalInscripciones ?? 0} icon={ClipboardList} />
-
-                <StatsCard title="Inscripciones Activas" value={stats?.inscripcionesActivas ?? 0} icon={CheckCircle2} />
-
-            </div>
-
-
-
-            {/* Acciones rápidas */}
-
-            <div className="flex gap-3 flex-wrap">
-
-                <Button onClick={() => router.push("/admin/usuarios")}>Gestionar Usuarios</Button>
-
-                <Button variant="outline" onClick={() => router.push("/admin/materias")}>Gestionar Materias</Button>
-
-                <Button variant="outline" onClick={() => router.push("/admin/inscripciones")}>Ver Inscripciones</Button>
-
-            </div>
-
-        </div>
-
-    );
-
-} 
+      <div className="flex gap-3 flex-wrap">
+        <Button onClick={() => router.push("/admin/usuarios")}>Gestionar Usuarios</Button>
+        <Button variant="outline" onClick={() => router.push("/admin/establecimientos")}>Establecimientos</Button>
+        <Button variant="outline" onClick={() => router.push("/admin/registros")}>Ver Registros</Button>
+        <Button variant="outline" onClick={() => router.push("/admin/reportes")}>Reportes</Button>
+      </div>
+    </div>
+  )
+}
