@@ -1,8 +1,10 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { StatsCard } from "@/components/dashboard/stats-card"
-import { Syringe, CalendarDays, Users, Activity } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Syringe, CalendarDays, Users, ClipboardList, UserPlus } from "lucide-react"
 
 interface Props {
   nombreUsuario: string
@@ -18,22 +20,29 @@ interface Stats {
 
 export function DashboardVacunador({ nombreUsuario, establecimientoId }: Props) {
   const [stats, setStats] = useState<Stats | null>(null)
+  const router = useRouter()
 
   useEffect(() => {
     fetch("/api/vacunador/stats")
       .then((r) => r.json())
       .then((d) => setStats(d.stats))
+      .catch(() => {/* stats non-critical */})
   }, [])
 
-  const hoy = new Date().toLocaleDateString("es-BO", { weekday: "long", year: "numeric", month: "long", day: "numeric" })
+  const hoy = new Date().toLocaleDateString("es-BO", {
+    weekday: "long", year: "numeric", month: "long", day: "numeric",
+  })
 
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-muted-foreground capitalize">{hoy}</p>
-        <p className="text-sm text-muted-foreground mt-1">
-          Establecimiento: <span className="font-medium text-foreground">{establecimientoId ?? "No asignado"}</span>
-        </p>
+        <h2 className="text-lg font-semibold">Bienvenido, {nombreUsuario}</h2>
+        <p className="text-muted-foreground capitalize text-sm">{hoy}</p>
+        {establecimientoId && (
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Establecimiento: <span className="font-medium text-foreground">{establecimientoId}</span>
+          </p>
+        )}
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -53,18 +62,23 @@ export function DashboardVacunador({ nombreUsuario, establecimientoId }: Props) 
           title="Pacientes atendidos"
           value={stats?.pacientesAtendidos ?? "—"}
           icon={<Users className="h-4 w-4 text-muted-foreground" />}
-          description="Total de pacientes únicos"
+          description="Pacientes únicos vacunados"
         />
       </div>
 
-      <div className="rounded-lg border p-6 bg-muted/30">
-        <div className="flex items-center gap-2 mb-2">
-          <Activity className="h-5 w-5 text-primary" />
-          <h3 className="font-semibold">Acceso rápido</h3>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          Usa <strong>Registrar Vacuna</strong> en el menú para buscar un paciente y registrar una dosis del esquema PAI.
-        </p>
+      <div className="flex gap-3 flex-wrap">
+        <Button onClick={() => router.push("/vacunador/vacunar")}>
+          <Syringe className="mr-2 h-4 w-4" />
+          Registrar Vacuna
+        </Button>
+        <Button variant="outline" onClick={() => router.push("/vacunador/pacientes")}>
+          <UserPlus className="mr-2 h-4 w-4" />
+          Nuevo Paciente
+        </Button>
+        <Button variant="outline" onClick={() => router.push("/vacunador/registros")}>
+          <ClipboardList className="mr-2 h-4 w-4" />
+          Mis Registros
+        </Button>
       </div>
     </div>
   )

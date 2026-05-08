@@ -15,5 +15,13 @@ export default async function CoordinadorPage() {
 
   if (perfil?.rol !== "coordinador") redirect("/login")
 
-  return <DashboardCoordinador nombreUsuario={perfil.nombre_completo} departamento={perfil.departamento ?? ""} />
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+        <p className="text-muted-foreground">Resumen de vacunación de tu departamento</p>
+      </div>
+      <DashboardCoordinador nombreUsuario={perfil.nombre_completo} departamento={perfil.departamento ?? ""} />
+    </div>
+  )
 }

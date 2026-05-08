@@ -20,9 +20,18 @@ export function DashboardAdmin() {
   const router = useRouter()
 
   useEffect(() => {
-    fetch("/api/admin/stats")
-      .then((r) => r.json())
-      .then((d) => { setStats(d.stats); setLoading(false) })
+    async function cargar() {
+      try {
+        const r = await fetch("/api/admin/stats")
+        const d = await r.json()
+        setStats(d.stats)
+      } catch {
+        // silently fail — stats are non-critical
+      } finally {
+        setLoading(false)
+      }
+    }
+    void cargar()
   }, [])
 
   if (loading) return <div className="text-muted-foreground py-8 text-center">Cargando...</div>

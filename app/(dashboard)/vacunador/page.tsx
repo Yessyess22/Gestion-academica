@@ -15,5 +15,13 @@ export default async function VacunadorPage() {
 
   if (perfil?.rol !== "vacunador") redirect("/login")
 
-  return <DashboardVacunador nombreUsuario={perfil.nombre_completo} establecimientoId={perfil.establecimiento_id} />
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+        <p className="text-muted-foreground">Resumen de tu actividad de vacunación</p>
+      </div>
+      <DashboardVacunador nombreUsuario={perfil.nombre_completo} establecimientoId={perfil.establecimiento_id} />
+    </div>
+  )
 }

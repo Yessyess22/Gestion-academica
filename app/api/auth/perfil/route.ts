@@ -1,95 +1,44 @@
-import { NextResponse } from "next/server" 
-import { createClient } from "@/lib/supabase/server" 
+import { NextResponse } from "next/server"
+import { createClient } from "@/lib/supabase/server"
 
-export async function PUT(request: Request) { 
-  try { 
-    const supabase = await createClient() 
+export async function GET() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: "No autorizado" }, { status: 401 })
 
-    // 1. Verificar que el usuario está autenticado 
-    const { 
-      data: { user }, 
-    } = await supabase.auth.getUser() 
+  const { data: perfil, error } = await supabase
+    .from("usuarios_perfil")
+    .select("nombre_completo, rol, telefono, avatar_url, ci, establecimiento_id, departamento")
+    .eq("id", user.id)
+    .single()
 
-    if (!user) { 
-      return NextResponse.json( 
-        { error: "No autorizado" }, 
-        { status: 401 } 
-      ) 
-    } 
+  if (error) return NextResponse.json({ error: "Perfil no encontrado" }, { status: 404 })
+  return NextResponse.json({ perfil })
+}
 
-    // 2. Leer el body de la petición 
-    const body = await request.json() 
-    const { nombre_completo, telefono, carrera } = body 
+export async function PUT(request: Request) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: "No autorizado" }, { status: 401 })
 
-    // 3. Validar campos obligatorios 
-    if (!nombre_completo || nombre_completo.trim().length < 2) { 
-      return NextResponse.json( 
-        { error: "El nombre debe tener al menos 2 caracteres" }, 
-        { status: 400 } 
-      ) 
-    } 
+  const body = await request.json()
+  const { nombre_completo, telefono } = body
 
-    // 4. Actualizar el perfil 
-    const { data, error } = await supabase 
-      .from("usuarios_perfil") 
-      .update({ 
-        nombre_completo: nombre_completo.trim(), 
-        telefono: telefono?.trim() || null, 
-        carrera: carrera?.trim() || null, 
-      }) 
-      .eq("id", user.id) 
-      .select() 
-      .single() 
+  if (!nombre_completo || nombre_completo.trim().length < 2) {
+    return NextResponse.json({ error: "El nombre debe tener al menos 2 caracteres" }, { status: 400 })
+  }
 
-    if (error) { 
-      return NextResponse.json( 
-        { error: "Error al actualizar: " + error.message }, 
-        { status: 500 } 
-      ) 
-    } 
+  const { data, error } = await supabase
+    .from("usuarios_perfil")
+    .update({
+      nombre_completo: nombre_completo.trim(),
+      telefono: telefono?.trim() || null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", user.id)
+    .select()
+    .single()
 
-    return NextResponse.json({ perfil: data }) 
-  } catch { 
-    return NextResponse.json( 
-      { error: "Error interno del servidor" }, 
-      { status: 500 } 
-    ) 
-  } 
-} 
-
-export async function GET() { 
-  try { 
-    const supabase = await createClient() 
-
-    const { 
-      data: { user }, 
-    } = await supabase.auth.getUser() 
-
-    if (!user) {
-      return NextResponse.json( 
-        { error: "No autorizado" }, 
-        { status: 401 } 
-      ) 
-    } 
-
-    const { data: perfil, error } = await supabase 
-      .from("usuarios_perfil") 
-      .select("*") 
-      .eq("id", user.id) 
-      .single() 
-
-    if (error) { 
-      return NextResponse.json( 
-        { error: "Perfil no encontrado" }, 
-        { status: 404 } 
-      ) 
-    } 
-
-    return NextResponse.json({ perfil }) 
-  } catch { 
-    return NextResponse.json( 
-      { error: "Error interno del servidor" }, 
-      { status: 500 } 
-    ) 
-  } 
-} 
+  if (error) return NextResponse.json({ error: "Error al actualizar: " + error.message }, { status: 500 })
+  return NextResponse.json({ perfil: data })
+}

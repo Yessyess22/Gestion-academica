@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { toast } from "sonner"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -24,13 +25,19 @@ export function ReportesAdmin() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch("/api/admin/reportes")
-      .then((r) => r.json())
-      .then((d) => {
+    async function cargar() {
+      try {
+        const r = await fetch("/api/admin/reportes")
+        const d = await r.json()
         setCobertura(d.cobertura_departamento ?? [])
         setDosis(d.dosis_por_vacuna ?? [])
+      } catch {
+        toast.error("Error al cargar reportes")
+      } finally {
         setLoading(false)
-      })
+      }
+    }
+    void cargar()
   }, [])
 
   const getColor = (pct: number) => {

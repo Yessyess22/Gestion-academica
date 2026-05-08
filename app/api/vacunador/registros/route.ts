@@ -80,6 +80,7 @@ export async function POST(request: Request) {
       temperatura_conservacion: parsed.data.temperatura_conservacion,
       edad_dias_aplicacion: edadDias,
       via_administracion: parsed.data.via_administracion ?? vacuna?.via_administracion,
+      aplicacion_oportuna: parsed.data.aplicacion_oportuna ?? null,
       vacunador_id: user.id,
     })
     .select()

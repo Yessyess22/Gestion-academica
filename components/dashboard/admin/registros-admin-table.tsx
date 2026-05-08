@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { toast } from "sonner"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
@@ -23,9 +24,18 @@ export function RegistrosAdminTable() {
   const [filtro, setFiltro] = useState("")
 
   useEffect(() => {
-    fetch("/api/admin/registros")
-      .then((r) => r.json())
-      .then((d) => { setRegistros(d.registros ?? []); setLoading(false) })
+    async function cargar() {
+      try {
+        const r = await fetch("/api/admin/registros")
+        const d = await r.json()
+        setRegistros(d.registros ?? [])
+      } catch {
+        toast.error("Error al cargar registros")
+      } finally {
+        setLoading(false)
+      }
+    }
+    void cargar()
   }, [])
 
   const filtrados = registros.filter((r) =>

@@ -8,7 +8,7 @@ export const pacienteSchema = z.object({
   sexo: z.enum(["M", "F"], { message: "Selecciona el sexo" }),
   fecha_nacimiento: z.string().min(1, "La fecha de nacimiento es obligatoria"),
   municipio_residencia: z.string().min(2).max(100).optional().or(z.literal("")),
-  comunidad_indigena: z.boolean().default(false),
+  comunidad_indigena: z.boolean(),
 })
 
 export type PacienteFormData = z.infer<typeof pacienteSchema>

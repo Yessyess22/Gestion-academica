@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { toast } from "sonner"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -17,9 +18,18 @@ export function CoberturaCoordinador() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch("/api/coordinador/cobertura")
-      .then((r) => r.json())
-      .then((d) => { setCobertura(d.cobertura ?? []); setLoading(false) })
+    async function cargar() {
+      try {
+        const r = await fetch("/api/coordinador/cobertura")
+        const d = await r.json()
+        setCobertura(d.cobertura ?? [])
+      } catch {
+        toast.error("Error al cargar cobertura")
+      } finally {
+        setLoading(false)
+      }
+    }
+    void cargar()
   }, [])
 
   if (loading) return <Skeleton className="h-64 w-full" />

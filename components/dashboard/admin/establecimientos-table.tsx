@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { toast } from "sonner"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
@@ -25,9 +26,18 @@ export function EstablecimientosTable() {
   const [filtro, setFiltro] = useState("")
 
   useEffect(() => {
-    fetch("/api/admin/establecimientos")
-      .then((r) => r.json())
-      .then((d) => { setItems(d.establecimientos ?? []); setLoading(false) })
+    async function cargar() {
+      try {
+        const r = await fetch("/api/admin/establecimientos")
+        const d = await r.json()
+        setItems(d.establecimientos ?? [])
+      } catch {
+        toast.error("Error al cargar establecimientos")
+      } finally {
+        setLoading(false)
+      }
+    }
+    void cargar()
   }, [])
 
   const filtrados = items.filter((e) =>
